@@ -539,6 +539,11 @@ namespace IL2X.Core.Emitters
 					var primitive = (ASMPrimitiveLiteral)op;
 					return primitive.value.ToString();
 				}
+				
+				case ASMCode.Null:
+				{
+					return "'\\0'";
+				}
 
 				case ASMCode.StringLiteral:
 				{

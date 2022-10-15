@@ -372,6 +372,12 @@ namespace IL2X.Core.Jit
 						break;
 					}
 
+					case Code.Ldnull: {
+						Ldc_X(op, (ValueType)null);
+						
+						break;
+					}
+
 					// ===================================
 					// stores
 					// ===================================
@@ -609,8 +615,10 @@ namespace IL2X.Core.Jit
 			asmOperations.AddLast(asmOp);
 		}
 
-		private ASMObject OperandToASMOperand(object obj)
-		{
+		private ASMObject OperandToASMOperand(object obj) {
+			if (obj == null)
+				return new ASMNull();
+			
 			var type = obj.GetType();
 
 			// primitive

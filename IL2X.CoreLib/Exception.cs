@@ -12,13 +12,13 @@ namespace System
 			this.Message = message;
 		}
 		
-		//public Exception InnerException
-		//{
-		//	get
-		//	{
-		//		return null;
-		//	}
-		//}
+		public Exception InnerException
+		{
+			get
+			{
+				return null;
+			}
+		}
 
 		public virtual string Message { get; private set; }
 		

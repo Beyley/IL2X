@@ -6,12 +6,14 @@ namespace System
 	[NativeType(NativeTarget.C, "float")]
 	public readonly struct Single
 	{
-		/*public const Single MaxValue = (float)3.40282346638528859e+38;
+		public const Single MaxValue = (float)3.40282346638528859e+38;
 		public const Single MinValue = (float)-3.40282346638528859e+38;
 		public const Single Epsilon = (float)1.4e-45;
 		public const Single PositiveInfinity = (float)1.0 / (float)0.0;
 		public const Single NegativeInfinity = (float)-1.0 / (float)0.0;
 		public const Single NaN = (float)0.0 / (float)0.0;
+		
+		/*
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static unsafe bool IsNaN(float f)

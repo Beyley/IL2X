@@ -15,6 +15,7 @@ namespace IL2X.Core
 
 		PrimitiveLiteral,
 		StringLiteral,
+		Null,
 
 		SizeOf,
 
@@ -174,6 +175,14 @@ namespace IL2X.Core
 		: base(ASMCode.PrimitiveLiteral)
 		{
 			this.value = value;
+		}
+	}
+	
+	public class ASMNull : ASMObject
+	{
+		public ASMNull()
+		: base(ASMCode.Null)
+		{
 		}
 	}
 

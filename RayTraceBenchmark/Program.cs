@@ -39,6 +39,8 @@
 				ulong ulj = ulong.MaxValue;
 				ulj += 1000;
 			}
+
+			object nullObject = null;
 			
 			int a = Foo(123);
 			EXIT:;
