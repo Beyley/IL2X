@@ -5,9 +5,10 @@ namespace System
 	[NativeType(NativeTarget.C, "uint64_t", "stdint.h")]
 	public readonly struct UInt64
 	{
-		/*public const UInt64 MaxValue = 18446744073709551615;
+		public const UInt64 MaxValue = 18446744073709551615;
 		public const UInt64 MinValue = 0;
 
+		/*
 		public unsafe string ToString()
 		{
 			byte* str = stackalloc byte[Number.UInt64NumberBufferLength + 1];

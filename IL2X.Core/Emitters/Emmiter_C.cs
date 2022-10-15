@@ -114,6 +114,79 @@ namespace IL2X.Core.Emitters
 						RemoveTab();
 						WriteLine("};");
                     }
+					WriteLine();
+
+					// write safe add and subtract functions
+					WriteLine("/* === Safe Add/Subtract === */");
+					WriteLine("#include <stdint.h>");
+					WriteLine(@"static inline int32_t IL2X_SafeAddInt32(int32_t a, int32_t b)
+{
+	if (b > 0)
+	{
+		if (a > INT32_MAX - b) return INT32_MAX; //TODO: make these proper exceptions, once they exist
+	}
+	else
+	{
+		if (a < INT32_MIN - b) return INT32_MIN;
+	}
+	return a + b;
+}");
+					WriteLine(@"static inline int32_t IL2X_SafeSubtractInt32(int32_t a, int32_t b)
+{
+	if (b > 0)
+	{
+		if (a < INT32_MIN + b) return INT32_MIN;
+	}
+	else
+	{
+		if (a > INT32_MAX + b) return INT32_MAX;
+	}
+	return a - b;
+}");
+					WriteLine(@"static inline int64_t IL2X_SafeAddInt64(int64_t a, int64_t b)
+{
+	if (b > 0)
+	{
+		if (a > INT64_MAX - b) return INT64_MAX; //TODO: make these proper exceptions, once they exist
+	}
+	else
+	{
+		if (a < INT64_MIN - b) return INT64_MIN;
+	}
+	return a + b;
+}");
+					WriteLine(@"static inline int64_t IL2X_SafeSubtractInt64(int64_t a, int64_t b)
+{
+	if (b > 0)
+	{
+		if (a < INT64_MIN + b) return INT64_MIN;
+	}
+	else
+	{
+		if (a > INT64_MAX + b) return INT64_MAX;
+	}
+	return a - b;
+}");
+					WriteLine(@"static inline uint32_t IL2X_SafeAddUInt32(uint32_t a, uint32_t b)
+{
+	if (UINT32_MAX - a < b) return UINT32_MAX; //TODO: make these proper exceptions, once they exist
+	return a + b;
+}");
+					WriteLine(@"static inline uint32_t IL2X_SafeSubtractUInt32(uint32_t a, uint32_t b)
+{
+	if (a < b) return 0;
+	return a - b;
+}");
+					WriteLine(@"static inline uint64_t IL2X_SafeAddUInt64(uint64_t a, uint64_t b)
+{
+	if (UINT64_MAX - a < b) return UINT64_MAX; //TODO: make these proper exceptions, once they exist
+	return a + b;
+}");
+					WriteLine(@"static inline uint64_t IL2X_SafeSubtractUInt64(uint64_t a, uint64_t b)
+{
+	if (a < b) return 0;
+	return a - b;
+}");
 				}
 			}
 
@@ -486,6 +559,123 @@ namespace IL2X.Core.Emitters
 				{
 					var arithmaticOp = (ASMArithmatic)op;
 					return $"{GetOperationValue(arithmaticOp.value1)} + {GetOperationValue(arithmaticOp.value2)}";
+				}
+				
+				case ASMCode.AddIntsWithOverflowProtection:
+				{
+					var arithmaticOp = (ASMArithmatic)op;
+
+					string Get(ASMObject asmObject) {
+						if(asmObject is ASMPrimitiveLiteral primitive) {
+							return primitive.value.ToString();
+						}
+						if(asmObject is ASMLocal local) {
+							return GetLocalVariableName(local.variable);
+						}
+						if(asmObject is ASMField field) {
+							return GetFieldName(field.field);
+						}
+						if(asmObject is ASMEvalStackLocal evalStackLocal) {
+							return GetLocalEvalVariableName(evalStackLocal.index);
+						}
+						if(asmObject is ASMParameter parameter) {
+							return GetParameterName(parameter.parameter);
+						}
+						if(asmObject is ASMThisPtr) {
+							return "self";
+						}
+						throw new Exception($"Unsupported arithmatic value: {asmObject}");
+					}
+
+					Type GetType(ASMObject asmObject1, ASMObject asmObject2) {
+						Type type1 = null;
+						Type type2 = null;
+						
+						if(asmObject1 is ASMPrimitiveLiteral primitive1) {
+							type1 ??= primitive1.GetType();
+						}
+						if(asmObject2 is ASMPrimitiveLiteral primitiveLiteral2) {
+							type2 ??= primitiveLiteral2.GetType();
+						}
+						
+						if(asmObject1 is ASMLocal local1) {
+							type1 ??= local1.variable.VariableType.MetadataType switch {
+								MetadataType.Int32            => typeof(Int32),
+								MetadataType.UInt32           => typeof(UInt32),
+								MetadataType.Int64            => typeof(Int64),
+								MetadataType.UInt64           => typeof(UInt64),
+								_                             => throw new ArgumentOutOfRangeException()
+							};
+						}
+						if(asmObject2 is ASMLocal local2) {
+							type2 ??= local2.variable.VariableType.MetadataType switch {
+								MetadataType.Int32            => typeof(Int32),
+								MetadataType.UInt32           => typeof(UInt32),
+								MetadataType.Int64            => typeof(Int64),
+								MetadataType.UInt64           => typeof(UInt64),
+								_                             => throw new ArgumentOutOfRangeException()
+							};
+						}
+						
+						if(asmObject1 is ASMField field1) {
+							type1 ??= field1.field.FieldType.MetadataType switch {
+								MetadataType.Int32            => typeof(Int32),
+								MetadataType.UInt32           => typeof(UInt32),
+								MetadataType.Int64            => typeof(Int64),
+								MetadataType.UInt64           => typeof(UInt64),
+								_                             => throw new ArgumentOutOfRangeException()
+							};
+						}
+						if(asmObject2 is ASMField field2) {
+							type2 ??= field2.field.FieldType.MetadataType switch {
+								MetadataType.Int32            => typeof(Int32),
+								MetadataType.UInt32           => typeof(UInt32),
+								MetadataType.Int64            => typeof(Int64),
+								MetadataType.UInt64           => typeof(UInt64),
+								_                             => throw new ArgumentOutOfRangeException()
+							};
+						}
+						
+						if(asmObject1 is ASMEvalStackLocal evalStackLocal1) {
+							type1 ??= evalStackLocal1.type.MetadataType switch {
+								MetadataType.Int32            => typeof(Int32),
+								MetadataType.UInt32           => typeof(UInt32),
+								MetadataType.Int64            => typeof(Int64),
+								MetadataType.UInt64           => typeof(UInt64),
+								_                             => throw new ArgumentOutOfRangeException()
+							};
+						}
+						if(asmObject2 is ASMEvalStackLocal evalStackLocal2) {
+							type2 ??= evalStackLocal2.type.MetadataType switch {
+								MetadataType.Int32            => typeof(Int32),
+								MetadataType.UInt32           => typeof(UInt32),
+								MetadataType.Int64            => typeof(Int64),
+								MetadataType.UInt64           => typeof(UInt64),
+								_                             => throw new ArgumentOutOfRangeException()
+							};
+						}
+
+						if (type1 == typeof(Int64) || type2 == typeof(Int64))
+							return typeof(Int64);
+						if (type1 == typeof(UInt64) || type2 == typeof(UInt64))
+							return typeof(UInt64);
+						if(type1 == typeof(Int32) || type2 == typeof(Int32))
+							return typeof(Int32);
+						if(type1 == typeof(UInt32) || type2 == typeof(UInt32))
+							return typeof(UInt32);
+
+						throw new Exception("Unknown arithmatic type");
+					}
+
+					Type type = GetType(arithmaticOp.value1, arithmaticOp.value2);
+
+					return type switch {
+						Type t when t == typeof(Int32)  => $"IL2X_SafeAddInt32({Get(arithmaticOp.value1)}, {Get(arithmaticOp.value2)})",
+						Type t when t == typeof(UInt32) => $"IL2X_SafeAddUInt32({Get(arithmaticOp.value1)}, {Get(arithmaticOp.value2)})",
+						Type t when t == typeof(Int64)  => $"IL2X_SafeAddInt64({Get(arithmaticOp.value1)}, {Get(arithmaticOp.value2)})",
+						Type t when t == typeof(UInt64) => $"IL2X_SafeAddUInt64({Get(arithmaticOp.value1)}, {Get(arithmaticOp.value2)})",
+						_                               => throw new Exception("Unknown checked addition type!")
+					};
 				}
 
 				case ASMCode.Sub:

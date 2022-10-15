@@ -20,6 +20,7 @@ namespace IL2X.Core
 
 		// arithmatic
 		Add,
+		AddIntsWithOverflowProtection,
 		Sub,
 		Mul,
 		Div,

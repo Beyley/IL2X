@@ -26,6 +26,20 @@
 
 		static void Main()
 		{
+			checked {
+				int j = int.MaxValue;
+				j = j + 1000;
+				
+				uint uj = uint.MaxValue;
+				uj += 1000;
+
+				long lj = long.MaxValue;
+				lj += 1000;
+				
+				ulong ulj = ulong.MaxValue;
+				ulj += 1000;
+			}
+			
 			int a = Foo(123);
 			EXIT:;
 			if (a == 124) a = -200;

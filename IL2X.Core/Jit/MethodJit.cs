@@ -3,6 +3,7 @@ using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -123,6 +124,84 @@ namespace IL2X.Core.Jit
 						StackPop();
 						break;
 					}
+					
+					// ===================================
+					// type conversions
+					// ===================================
+					case Code.Conv_I1: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToSByte(num.obj));
+						break;	
+					}
+					case Code.Conv_I2: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToInt16(num.obj));
+						break;	
+					}
+					case Code.Conv_I4: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToInt32(num.obj));
+						break;	
+					}
+					case Code.Conv_I8: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToInt64(num.obj));
+						break;
+					}
+					case Code.Conv_U1: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToByte(num.obj));
+						break;	
+					}
+					case Code.Conv_U2: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToUInt16(num.obj));
+						break;	
+					}
+					case Code.Conv_U4: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToUInt32(num.obj));
+						break;	
+					}
+					case Code.Conv_U8: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToUInt64(num.obj));
+						break;
+					}
+					case Code.Conv_R4: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToSingle(num.obj));
+						break;
+					}
+					case Code.Conv_R8: {
+						var num = StackPop();	
+						StackPush(op, Convert.ToDouble(num.obj));
+						break;
+					}
+					case Code.Conv_I: {
+						var num = StackPop();	
+						
+						if(Unsafe.SizeOf<IntPtr>() == sizeof(int))
+							StackPush(op, Convert.ToInt32(num.obj));
+						else if(Unsafe.SizeOf<IntPtr>() == sizeof(long))
+							StackPush(op, Convert.ToInt64(num.obj));
+						else
+							throw new Exception("Unsupported platform");
+						
+						break;
+					}
+					case Code.Conv_U: {
+						var num = StackPop();	
+						
+						if(Unsafe.SizeOf<IntPtr>() == sizeof(int))
+							StackPush(op, Convert.ToUInt32(num.obj));
+						else if(Unsafe.SizeOf<IntPtr>() == sizeof(long))
+							StackPush(op, Convert.ToUInt64(num.obj));
+						else
+							throw new Exception("Unsupported platform");
+						
+						break;
+					}
 
 					// ===================================
 					// arithmatic
@@ -134,6 +213,17 @@ namespace IL2X.Core.Jit
 						var evalVarType = GetArithmaticResultType(p1.obj, p2.obj);
 						var evalVar = GetEvalStackVar(evalVarType);
 						AddASMOp(new ASMArithmatic(ASMCode.Add, OperandToASMOperand(p1.obj), OperandToASMOperand(p2.obj), evalVar));
+						StackPush(op, evalVar);
+						break;
+					}
+
+					case Code.Add_Ovf_Un:
+					case Code.Add_Ovf: {
+						var p2          = StackPop();
+						var p1          = StackPop();
+						var evalVarType = GetArithmaticResultType(p1.obj, p2.obj);
+						var evalVar     = GetEvalStackVar(evalVarType);
+						AddASMOp(new ASMArithmatic(ASMCode.AddIntsWithOverflowProtection, OperandToASMOperand(p1.obj), OperandToASMOperand(p2.obj), evalVar));
 						StackPush(op, evalVar);
 						break;
 					}
@@ -159,7 +249,7 @@ namespace IL2X.Core.Jit
 						StackPush(op, evalVar);
 						break;
 					}
-
+					
 					case Code.Div:
 					{
 						var p2 = StackPop();
@@ -186,6 +276,12 @@ namespace IL2X.Core.Jit
 					case Code.Ldc_I4_M1: Ldc_X(op, -1); break;
 					case Code.Ldc_I4:
 					case Code.Ldc_I4_S:
+					{
+						Ldc_X(op, (ValueType)op.Operand);
+						break;
+					}
+
+					case Code.Ldc_I8: 
 					{
 						Ldc_X(op, (ValueType)op.Operand);
 						break;

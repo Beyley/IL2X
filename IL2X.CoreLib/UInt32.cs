@@ -5,8 +5,10 @@ namespace System
 	[NativeType(NativeTarget.C, "uint32_t", "stdint.h")]
 	public readonly struct UInt32
 	{
-		/*public const UInt32 MaxValue = 4294967295;
+		public const UInt32 MaxValue = 4294967295;
 		public const UInt32 MinValue = 0;
+		
+		/*
 
 		public unsafe string ToString()
 		{
