@@ -41,6 +41,9 @@
 			}
 
 			object nullObject = null;
+
+			if (nullObject != null)
+				return;
 			
 			int a = Foo(123);
 			EXIT:;

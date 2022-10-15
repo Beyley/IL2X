@@ -542,7 +542,7 @@ namespace IL2X.Core.Emitters
 				
 				case ASMCode.Null:
 				{
-					return "'\\0'";
+					return "0";
 				}
 
 				case ASMCode.StringLiteral:
