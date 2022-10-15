@@ -24,6 +24,7 @@ namespace IL2X.Core
 		Sub,
 		Mul,
 		Div,
+		Rem,
 
 		// writes
 		WriteLocal,

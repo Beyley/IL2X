@@ -250,6 +250,7 @@ namespace IL2X.Core.Jit
 						break;
 					}
 					
+					case Code.Div_Un: 
 					case Code.Div:
 					{
 						var p2 = StackPop();
@@ -257,6 +258,17 @@ namespace IL2X.Core.Jit
 						var evalVarType = GetArithmaticResultType(p1.obj, p2.obj);
 						var evalVar = GetEvalStackVar(evalVarType);
 						AddASMOp(new ASMArithmatic(ASMCode.Div, OperandToASMOperand(p1.obj), OperandToASMOperand(p2.obj), evalVar));
+						StackPush(op, evalVar);
+						break;
+					}
+
+					case Code.Rem_Un:
+					case Code.Rem: {
+						var p2          = StackPop();
+						var p1          = StackPop();
+						var evalVarType = GetArithmaticResultType(p1.obj, p2.obj);
+						var evalVar     = GetEvalStackVar(evalVarType);
+						AddASMOp(new ASMArithmatic(ASMCode.Rem, OperandToASMOperand(p1.obj), OperandToASMOperand(p2.obj), evalVar));
 						StackPush(op, evalVar);
 						break;
 					}
@@ -283,6 +295,10 @@ namespace IL2X.Core.Jit
 
 					case Code.Ldc_I8: 
 					{
+						Ldc_X(op, (ValueType)op.Operand);
+						break;
+					}
+					case Code.Ldc_R4: {
 						Ldc_X(op, (ValueType)op.Operand);
 						break;
 					}
@@ -771,8 +787,9 @@ namespace IL2X.Core.Jit
 
 		private TypeReference GetArithmaticResultType(object value1, object value2)
 		{
-			TypeReference GetType(object value)
-			{
+			TypeReference GetType(object value) {
+				if (value is ASMEvalStackLocal local) return local.type;
+				if (value is ASMField field) return field.type;
 				if (value is VariableReference value_Var) return value_Var.VariableType;
 				if (value is ParameterReference value_Param) return value_Param.ParameterType;
 				if (value is Int16) return GetTypeSystem().Int16;

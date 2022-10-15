@@ -696,6 +696,12 @@ namespace IL2X.Core.Emitters
 					return $"{GetOperationValue(arithmaticOp.value1)} / {GetOperationValue(arithmaticOp.value2)}";
 				}
 
+				case ASMCode.Rem: 
+				{
+					var arithmaticOp = (ASMArithmatic)op;
+					return $"{GetOperationValue(arithmaticOp.value1)} % {GetOperationValue(arithmaticOp.value2)}";	
+				}
+
 				// ===================================
 				// stores
 				// ===================================
