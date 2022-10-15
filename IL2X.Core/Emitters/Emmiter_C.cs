@@ -597,10 +597,10 @@ namespace IL2X.Core.Emitters
 						Type type2 = null;
 						
 						if(asmObject1 is ASMPrimitiveLiteral primitive1) {
-							type1 ??= primitive1.GetType();
+							type1 ??= primitive1.value.GetType();
 						}
 						if(asmObject2 is ASMPrimitiveLiteral primitiveLiteral2) {
-							type2 ??= primitiveLiteral2.GetType();
+							type2 ??= primitiveLiteral2.value.GetType();
 						}
 						
 						if(asmObject1 is ASMLocal local1) {
